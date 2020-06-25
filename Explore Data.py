@@ -13,7 +13,7 @@ pd.set_option('display.max_columns', 500)
 
 filename = r"..\Data\creditcard.csv"
 df = pd.read_csv(filename)
-'''
+
 #Check to make sure data is imported correctly
 print(df.head())
 
@@ -27,11 +27,11 @@ for col in ['Class']:
 
 #Counting number of NaN values in dataframe
 print(df.isnull().sum().sum())
-'''
+
 #Basic Description of datasets
 
 print(df.describe())
-'''
+
 # Count of each feature is the same, confirming that there are no missing values
 # Max time is 1720,792 confirming that the data covers just above 2 days from first transaction recorded
 # 50th percentile is 84,692 which indicates that data is generally evenly distributed across two days
@@ -83,4 +83,4 @@ print(corr, file=open("corr_output.txt","w"))
 sn.heatmap(corr,annot=False)
 
 plt.show()
-'''
+
