@@ -2,17 +2,17 @@
 # Credit Card Fraud Detection
 Classifying fraudulent credit card transactions from open source Credit Card Transaction Data
 
-# Data source
+## Data source
 
 The open source data used in this project is the [MLB-ULB Credit Card Transaction Data](https://www.kaggle.com/mlg-ulb/creditcardfraud)
 
-# Guide
+## Guide
 
 This project can be broken down into the following steps, each step is organized in the following files:
 
 
 
-# Acknowledgements
+## Acknowledgements
 
 The dataset has been collected and analysed during a research collaboration of Worldline and the Machine Learning Group (http://mlg.ulb.ac.be) of ULB (Université Libre de Bruxelles) on big data mining and fraud detection.
 
