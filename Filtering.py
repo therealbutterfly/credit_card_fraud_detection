@@ -1,22 +1,19 @@
+
 #importing libraries
 import pandas as pd
 import numpy as np
 import seaborn as sn
 import matplotlib.pyplot as plt
-
-#Decision Tree Import
 from sklearn.tree import DecisionTreeClassifier
-
-# Import train_test_split function
 from sklearn.model_selection import TimeSeriesSplit
-
-#Import scikit-learn metrics module for accuracy calculation
 from sklearn import metrics
 from sklearn.metrics import balanced_accuracy_score
 from sklearn.metrics import average_precision_score
 from sklearn.metrics import f1_score
 from sklearn.metrics import roc_auc_score
+from sklearn.feature_selection import RFE
 
+import pandas as pd
 #Importing data
 filename = r"creditcard.csv"
 df = pd.read_csv(filename)
@@ -26,7 +23,7 @@ for col in ['Class']:
 #splitting into features and class
 X = df.loc[:, 'Time':'Amount']
 y = df.loc[:, 'Class']
-
+'''
 # Create Decision Tree classifer object
 clf = DecisionTreeClassifier()
 
@@ -56,12 +53,32 @@ for train_index, test_index in tss.split(X):
 # Print the model metrics
 metrics = pd.DataFrame(
     {'Trial': ["Trial1", "Trial2", "Trial3"],
-    'Balanced Accurace': balanced_accuracy_model,
+    'Balanced Accuracy': balanced_accuracy_model,
     'Average Precision': average_precision_model,
     'F1 Score': f1_score_model,
     'ROC_AUC': roc_auc_model
     })
-
+print("Model Metrics:")
 print(metrics)
+'''
+############Recursive Feature Elimination
 
-#Feature Selection using filtering 1 - SelecFromModel
+from sklearn.feature_selection import RFE
+from numpy import mean
+from numpy import std
+from sklearn.datasets import make_classification
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import RepeatedStratifiedKFold
+from sklearn.feature_selection import RFECV
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.pipeline import Pipeline
+
+# create pipeline
+rfe = RFECV(estimator=DecisionTreeClassifier())
+model = DecisionTreeClassifier()
+pipeline = Pipeline(steps=[('s',rfe),('m',model)])
+# evaluate model
+cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=3, random_state=1)
+n_scores = cross_val_score(pipeline, X, y, scoring='accuracy', cv=cv, n_jobs=-1, error_score='raise')
+# report performance
+print('Accuracy: %.3f (%.3f)' % (mean(n_scores), std(n_scores)))
