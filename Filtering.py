@@ -5,15 +5,14 @@ import numpy as np
 import seaborn as sn
 import matplotlib.pyplot as plt
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.model_selection import TimeSeriesSplit
+from sklearn.model_selection import TimeSeriesSplit, cross_val_score
 from sklearn import metrics
-from sklearn.metrics import balanced_accuracy_score
-from sklearn.metrics import average_precision_score
-from sklearn.metrics import f1_score
-from sklearn.metrics import roc_auc_score
-from sklearn.feature_selection import RFE
+from sklearn.metrics import balanced_accuracy_score, make_scorer, average_precision_score
+from sklearn.metrics import f1_score, roc_auc_score
+from sklearn.feature_selection import RFE, RFECV
+from sklearn.pipeline import Pipeline
+from numpy import mean, std
 
-import pandas as pd
 #Importing data
 filename = r"creditcard.csv"
 df = pd.read_csv(filename)
@@ -23,7 +22,12 @@ for col in ['Class']:
 #splitting into features and class
 X = df.loc[:, 'Time':'Amount']
 y = df.loc[:, 'Class']
+
 '''
+
+####### Decision Tree without filtering
+
+
 # Create Decision Tree classifer object
 clf = DecisionTreeClassifier()
 
@@ -61,24 +65,59 @@ metrics = pd.DataFrame(
 print("Model Metrics:")
 print(metrics)
 '''
-############Recursive Feature Elimination
 
-from sklearn.feature_selection import RFE
-from numpy import mean
-from numpy import std
-from sklearn.datasets import make_classification
-from sklearn.model_selection import cross_val_score
-from sklearn.model_selection import RepeatedStratifiedKFold
-from sklearn.feature_selection import RFECV
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.pipeline import Pipeline
+'''
+#### Applying RFE Feature Selection Method with manual checking...
+
+# get a list of models to evaluate
+def get_models():
+	models = dict()
+	for i in range(15, 25):
+		rfe = RFE(estimator=DecisionTreeClassifier(), n_features_to_select=i)
+		model = DecisionTreeClassifier()
+		models[str(i)] = Pipeline(steps=[('s',rfe),('m',model)])
+	return models
+
+#make balanced scorer
+scorer = make_scorer(balanced_accuracy_score)
+
+# evaluate a give model using cross-validation
+def evaluate_model(model):
+	cv = TimeSeriesSplit(n_splits = 3)
+	scores = cross_val_score(model, X, y, scoring=scorer, cv=cv, n_jobs=-1, error_score='raise')
+	return scores
+
+# get the models to evaluate
+models = get_models()
+
+# evaluate the models and store results
+results, names = list(), list()
+for name, model in models.items():
+	scores = evaluate_model(model)
+	results.append(scores)
+	names.append(name)
+	print('>%s %.3f (%.3f)' % (name, mean(scores)))
+
+for i in range(X.shape[1]):
+	print('Column: %d, Selected %s, Rank: %.3f' % (i, rfe.support_[i], rfe.ranking_[i]))
+'''
+
+#### Applying RFE Feature Selection Method automatic
 
 # create pipeline
 rfe = RFECV(estimator=DecisionTreeClassifier())
 model = DecisionTreeClassifier()
 pipeline = Pipeline(steps=[('s',rfe),('m',model)])
+
+#make balanced scorer
+scorer = make_scorer(balanced_accuracy_score)
+
 # evaluate model
-cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=3, random_state=1)
-n_scores = cross_val_score(pipeline, X, y, scoring='accuracy', cv=cv, n_jobs=-1, error_score='raise')
+cv = TimeSeriesSplit(n_splits=3)
+n_scores = cross_val_score(pipeline, X, y, scoring=scorer, cv=cv, n_jobs=-1, error_score='raise')
 # report performance
-print('Accuracy: %.3f (%.3f)' % (mean(n_scores), std(n_scores)))
+print('Balanced_Accuracy: %.3f (%.3f)' % (mean(n_scores), std(n_scores)))
+
+#Identify which columns were used
+for i in range(X.shape[1]):
+	print('Column: %d, Selected %s, Rank: %.3f' % (i, rfecv.support_[i], rfecv.ranking_[i]))
