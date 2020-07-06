@@ -12,6 +12,8 @@ from sklearn.metrics import f1_score, roc_auc_score
 from sklearn.feature_selection import RFE, RFECV
 from sklearn.pipeline import Pipeline
 from numpy import mean, std
+from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import  mutual_info_classif
 
 #Importing data
 filename = r"creditcard.csv"
@@ -22,11 +24,9 @@ for col in ['Class']:
 #splitting into features and class
 X = df.loc[:, 'Time':'Amount']
 y = df.loc[:, 'Class']
-
 '''
-
-####### Decision Tree without filtering
-
+#############################################################################
+#DECISION TREE WITHOUT FILTERING
 
 # Create Decision Tree classifer object
 clf = DecisionTreeClassifier()
@@ -67,12 +67,13 @@ print(metrics)
 '''
 
 '''
-#### Applying RFE Feature Selection Method with manual checking...
+###############################################################################
+#APPLYING RFE FEATURE SELECTION METHOD TO IDENTIFY OPTIMAL NUMBER OF COLUMNS
 
 # get a list of models to evaluate
 def get_models():
 	models = dict()
-	for i in range(15, 25):
+	for i in range(10, 25):
 		rfe = RFE(estimator=DecisionTreeClassifier(), n_features_to_select=i)
 		model = DecisionTreeClassifier()
 		models[str(i)] = Pipeline(steps=[('s',rfe),('m',model)])
@@ -96,28 +97,93 @@ for name, model in models.items():
 	scores = evaluate_model(model)
 	results.append(scores)
 	names.append(name)
-	print('>%s %.3f (%.3f)' % (name, mean(scores)))
+	print('>%s %.3f (%.3f)' % (name, mean(scores), std(scores)))
 
+###############################################################################
+#IDENTIFY COLUMNS USED WITH OPTIONAL NUMBER OF COLUMNS
+
+rfe = RFE(estimator=DecisionTreeClassifier(), n_features_to_select=19)
+# fit RFE
+rfe.fit(X, y)
+# summarize all features
 for i in range(X.shape[1]):
 	print('Column: %d, Selected %s, Rank: %.3f' % (i, rfe.support_[i], rfe.ranking_[i]))
 '''
+'''
+##############################################################################
+#APPLYING SELECTKBEST FEATURES WITH MUTUAL INFORMATION
 
-#### Applying RFE Feature Selection Method automatic
+# Import the necessary libraries first
+from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import  mutual_info_classif
+
+for i in range(10,25):
+    sel_mutual = SelectKBest(mutual_info_classif, k=i)
+    X_train_mutual = sel_mutual.fit_transform(X,y)
+    print(sel_mutual.get_support())
+
+###############################################################################
+# APPLYING DECISION TREE ALL COMBINATIONS ABOVE TO FIND OPTIMAL NUMBER OF FEATURES
+
+
+'''
+
+##############################################################################
+#STEP FORWARD FEATURE MODEL SELECTION
+
+import mlxtend as mlx
+from mlxtend.feature_selection import SequentialFeatureSelector as sfs
+
+#KFold Cross (with time series split) Validation approach
+tss = TimeSeriesSplit(n_splits = 3)
+tss.split(X)
+
+# Create Decision Tree classifer object
+clf = DecisionTreeClassifier()
+
+#make balanced scorer
+scorer = make_scorer(balanced_accuracy_score)
+
+# Iterate over each train-test split
+for train_index, test_index in tss.split(X):
+    # Split train-test
+    X_train, X_test = X.iloc[train_index, :], X.iloc[test_index,:]
+    y_train, y_test = y.iloc[train_index], y.iloc[test_index]
+
+# Build step forward feature selection
+sfs1 = sfs(clf,
+        k_features=24,
+        forward=True,
+        floating=False,
+        verbose=2,
+        scoring=scorer)
+# Perform SFFS
+sfs1 = sfs1.fit(X_train, y_train)
+
+# Which features?
+feat_cols = list(sfs1.k_feature_idx_)
+print(feat_cols)
+
+'''
+#############################################################################
+#FINDING THE OPTIMAL NUMBER OF COLUMNS AUTOMATICALLY WITH RFECV (error)
 
 # create pipeline
-rfe = RFECV(estimator=DecisionTreeClassifier())
+rfecv_model = RFECV(estimator=DecisionTreeClassifier())
 model = DecisionTreeClassifier()
-pipeline = Pipeline(steps=[('s',rfe),('m',model)])
+pipeline = Pipeline(steps=[('s',rfecv_model),('m',model)])
 
 #make balanced scorer
 scorer = make_scorer(balanced_accuracy_score)
 
 # evaluate model
 cv = TimeSeriesSplit(n_splits=3)
-n_scores = cross_val_score(pipeline, X, y, scoring=scorer, cv=cv, n_jobs=-1, error_score='raise')
+n_scores = cross_val_score(pipeline, X, y, scoring=scorer, cv=cv)
 # report performance
 print('Balanced_Accuracy: %.3f (%.3f)' % (mean(n_scores), std(n_scores)))
 
 #Identify which columns were used
+print(X.shap
 for i in range(X.shape[1]):
-	print('Column: %d, Selected %s, Rank: %.3f' % (i, rfecv.support_[i], rfecv.ranking_[i]))
+	print('Column: %d, Selected %s, Rank: %.3f' % (i, rfecv_model.support_[i], rfecv_model.ranking_[i]))
+'''
