@@ -20,7 +20,7 @@ Please note that since the dataset used is pretty large, running code can take s
 ## Project Next Steps
 
 1. Identify appropriate performance measures to evaluate models
-2. Twieak parameters and run models, with different combinations of feature selection and data balancing tools
+2. Tweak parameters and run models, with different combinations of feature selection and data balancing tools
 3. Identify "winning" model combination
 
 ## Acknowledgements
