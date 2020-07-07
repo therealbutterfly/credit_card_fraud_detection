@@ -100,7 +100,7 @@ for name, model in models.items():
 	print('>%s %.3f (%.3f)' % (name, mean(scores), std(scores)))
 
 ###############################################################################
-#IDENTIFY COLUMNS USED WITH OPTIONAL NUMBER OF COLUMNS
+#IDENTIFY COLUMN IDENITIFED AS PART OF OPTIONAL NUMBER OF COLUMNS (RFE)
 
 rfe = RFE(estimator=DecisionTreeClassifier(), n_features_to_select=19)
 # fit RFE
@@ -127,7 +127,7 @@ for i in range(10,25):
 
 
 '''
-
+'''
 ##############################################################################
 #STEP FORWARD FEATURE MODEL SELECTION
 
@@ -165,6 +165,7 @@ feat_cols = list(sfs1.k_feature_idx_)
 print(feat_cols)
 
 '''
+'''
 #############################################################################
 #FINDING THE OPTIMAL NUMBER OF COLUMNS AUTOMATICALLY WITH RFECV (error)
 
@@ -178,9 +179,15 @@ scorer = make_scorer(balanced_accuracy_score)
 
 # evaluate model
 cv = TimeSeriesSplit(n_splits=3)
-n_scores = cross_val_score(pipeline, X, y, scoring=scorer, cv=cv)
-# report performance
-print('Balanced_Accuracy: %.3f (%.3f)' % (mean(n_scores), std(n_scores)))
+result = cross_validate(pipeline, X, y, scoring=scorer,
+                          cv=cv, return_estimator=True)
+
+#feature selected for each iteration
+for iter, pipe in enumerate(result['estimator']):
+    print(f'Iteration no: {iter}')
+    for i in range(X.shape[1]):
+        print('Column: %d, Selected %s, Rank: %d' %
+            (i, pipe['s'].support_[i], pipe['s'].ranking_[i]))
 
 #Identify which columns were used
 print(X.shap

@@ -104,7 +104,7 @@ metrics = pd.DataFrame(
 print("Model Metrics:")
 print(metrics)
 '''
-
+'''
 ###############################################################################
 #SVM visualizing weighted model
 
@@ -150,7 +150,7 @@ b = ax.contour(XX, YY, Z, colors='r', levels=[0], alpha=0.5, linestyles=['-'])
 plt.legend([a.collections[0], b.collections[0]], ["non weighted", "weighted"],
            loc="upper right")
 plt.show()
-
+'''
 '''
 ###############################################################################
 #SVM weighted
