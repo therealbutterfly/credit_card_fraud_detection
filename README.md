@@ -8,9 +8,20 @@ The open source data used in this project is the [MLB-ULB Credit Card Transactio
 
 ## Guide
 
-This project can be broken down into the following steps, each step is organized in the following files:
+The different aspects of this project have been broken down into different .py files:
 
+1. Explore data.py 
+2. Feature Selection.py
+3. Data Balancing.py
+4. Models.py
 
+Please note that since the dataset used is pretty large, running code can take some time, especially the wrapper-type Feature Selection models. 
+
+## Project Next Steps
+
+1. Identify appropriate performance measures to evaluate models
+2. Twieak parameters and run models, with different combinations of feature selection and data balancing tools
+3. Identify "winning" model combination
 
 ## Acknowledgements
 
