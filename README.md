@@ -1,6 +1,11 @@
 
 # Credit Card Fraud Detection
-Classifying fraudulent credit card transactions from open source Credit Card Transaction Data
+Credit card fraud is the most significant type of transaction fraud in Canada , and experienced a 71% increase between 2008 and 2014. The main objective of this project is to use machine learning tools to detect fraudulent credit card transactions. By accurately identifying fraudulent credit card transactions, financial institutions can limit losses to consumers by freezing or suspending the credit cards.
+
+The research question tackled in this project is “Is a given credit card transaction fraudulent?”, which is a question that falls under the overarching theme of Anomaly Detection Problems. To answer this question, the Credit Card Fraud Detection Dataset, available on Kaggle.com , will be used to build a machine learning model. The data contains around 280,000 European credit card transactions, labelled as either fraudulent or non-fraudulent. 
+
+Supervised classification algorithms like k-Nearest Neighbors, Classification Trees, and SVMs are popular models used to solve similar problems. Additionally, techniques to balance the data and split into the test/training sets will be used to avoid overfitting / overtraining the model. The main tool used to employ these techniques will be Python, leveraging resources such as the Numpy, Pandas, Scipy, and Scikit-learn libraries.
+
 
 ## Data source
 
