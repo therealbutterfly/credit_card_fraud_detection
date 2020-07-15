@@ -7,13 +7,17 @@ import matplotlib.pyplot as plt
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import TimeSeriesSplit, cross_val_score
 from sklearn import metrics
-from sklearn.metrics import balanced_accuracy_score, make_scorer, average_precision_score
-from sklearn.metrics import f1_score, roc_auc_score
+from sklearn.metrics import fbeta_score
+from sklearn.metrics import recall_score, roc_auc_score, brier_score_loss, confusion_matrix
+import imblearn as imb
+from imblearn.metrics import geometric_mean_score
+from sklearn.metrics import make_scorer
 from sklearn.feature_selection import RFE, RFECV
 from sklearn.pipeline import Pipeline
 from numpy import mean, std
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import  mutual_info_classif
+
 
 #Importing data
 filename = r"creditcard.csv"
@@ -24,7 +28,7 @@ for col in ['Class']:
 #splitting into features and class
 X = df.loc[:, 'Time':'Amount']
 y = df.loc[:, 'Class']
-'''
+
 #############################################################################
 #DECISION TREE WITHOUT FILTERING
 
@@ -36,10 +40,11 @@ tss = TimeSeriesSplit(n_splits = 3)
 tss.split(X)
 
 # Initialize the accuracy of the models to blank list. The accuracy of each model will be appended to this list
-balanced_accuracy_model = []
-average_precision_model = []
-f1_score_model = []
+F_measure_model = []
 roc_auc_model = []
+brier_score_model = []
+confusion_matrix_model = []
+
 
 # Iterate over each train-test split
 for train_index, test_index in tss.split(X):
@@ -49,22 +54,27 @@ for train_index, test_index in tss.split(X):
     # Train the model
     model = clf.fit(X_train, y_train)
     # Append metrics to the list
-    balanced_accuracy_model.append(balanced_accuracy_score(y_test, model.predict(X_test)))
-    average_precision_model.append(average_precision_score(y_test, model.predict(X_test)))
-    f1_score_model.append(f1_score(y_test, model.predict(X_test)))
+    F_measure_model.append(fbeta_score(y_test, model.predict(X_test),beta=2))
     roc_auc_model.append(roc_auc_score(y_test, model.predict(X_test)))
+    brier_score_model.append(brier_score_loss(y_test, model.predict(X_test)))
+    confusion_matrix_model.append(confusion_matrix(y_test, model.predict(X_test)))
 
 # Print the model metrics
 metrics = pd.DataFrame(
-    {'Trial': ["Trial1", "Trial2", "Trial3"],
-    'Balanced Accuracy': balanced_accuracy_model,
-    'Average Precision': average_precision_model,
-    'F1 Score': f1_score_model,
-    'ROC_AUC': roc_auc_model
+    {'Result': ["Average"],
+    'F_measure': np.average(F_measure_model),
+    'ROC_AUC': np.average(roc_auc_model),
+    'Brier_Score' : np.average(brier_score_model),
     })
 print("Model Metrics:")
 print(metrics)
-'''
+
+print("Confusion Matrix")
+confusion = pd.DataFrame(
+    {'Trial': ["Trial 1", "Trial 2", "Trial 3"],
+    'Confusion_Matrix' : confusion_matrix_model
+    })
+print(confusion)
 
 '''
 ###############################################################################
