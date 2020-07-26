@@ -23,6 +23,15 @@ filename = r"creditcard.csv"
 df = pd.read_csv(filename)
 for col in ['Class']:
     df[col] = df[col].astype('category')
+
+# Create Decision Tree classifer object
+clf = DecisionTreeClassifier(random_state=1)
+
+# Initialize the accuracy of the models to blank list. The accuracy of each model will be appended to this list
+F_measure_model = []
+roc_auc_model = []
+brier_score_model = []
+
 '''
 #splitting into features and class
 X = df.loc[:, 'Time':'Amount']
@@ -33,17 +42,9 @@ y = df.loc[:, 'Class']
 #############################################################################
 #DECISION TREE WITHOUT FILTERING
 
-# Create Decision Tree classifer object
-clf = DecisionTreeClassifier(random_state=1)
-
 #KFold Cross (with time series split) Validation approach
 tss = TimeSeriesSplit(n_splits = 3)
 tss.split(X)
-
-# Initialize the accuracy of the models to blank list. The accuracy of each model will be appended to this list
-F_measure_model = []
-roc_auc_model = []
-brier_score_model = []
 
 # Iterate over each train-test split
 for train_index, test_index in tss.split(X):
@@ -66,8 +67,8 @@ metrics = pd.DataFrame(
     })
 print("Model Metrics:")
 print(metrics)
-
 '''
+
 '''
 ###############################################################################
 #APPLYING RFE FEATURE SELECTION METHOD TO IDENTIFY OPTIMAL NUMBER OF COLUMNS
@@ -104,6 +105,10 @@ for name, model in models.items():
 ###############################################################################
 #IDENTIFY COLUMN IDENITIFED AS PART OF OPTIONAL NUMBER OF COLUMNS (RFE)
 
+#KFold Cross (with time series split) Validation approach
+tss = TimeSeriesSplit(n_splits = 3)
+tss.split(X)
+
 rfe = RFE(estimator=DecisionTreeClassifier(), n_features_to_select=19)
 # fit RFE
 rfe.fit(X, y)
@@ -114,13 +119,6 @@ for i in range(X.shape[1]):
 '''
 ##############################################################################
 #APPLYING SELECTKBEST FEATURES WITH F_SCORE
-
-# Create Decision Tree classifer object
-clf = DecisionTreeClassifier()
-
-#KFold Cross (with time series split) Validation approach
-tss = TimeSeriesSplit(n_splits = 2)
-tss.split(X)
 
 #Select K Best and run model
 for i in range(1,30):
@@ -141,25 +139,20 @@ for i in range(1,30):
         print("AUC:", roc_auc_score(y_test, model.predict(X_test)))
         print("Brier:", brier_score_loss(y_test, model.predict(X_test)))
         print("Confusion_matrix:", confusion_matrix(y_test, model.predict(X_test)))
-
+'''
+'''
 # APPLYING Top K best combinations to decision tree
 
 #splitting into features and class
-X = df.loc[:, ['V3','V10','V12','V14','V16','V17']]
+X = df.loc[:, ['Time','V1','V2','V3','V4','V5','V6','V7',
+            'V8','V9','V10','V11','V12','V13','V14','V15',
+            'V16','V17','V18','V19','V20','V21','V24',
+            'V26','V27','V28','Amount']]
 y = df.loc[:, 'Class']
-
-# Create Decision Tree classifer object
-clf = DecisionTreeClassifier(random_state=1)
 
 #KFold Cross (with time series split) Validation approach
 tss = TimeSeriesSplit(n_splits = 3)
 tss.split(X)
-
-# Initialize the accuracy of the models to blank list. The accuracy of each model will be appended to this list
-F_measure_model = []
-roc_auc_model = []
-brier_score_model = []
-confusion_matrix_model = []
 
 # Iterate over each train-test split
 for train_index, test_index in tss.split(X):
@@ -183,7 +176,6 @@ metrics = pd.DataFrame(
 
 print("Model Metrics:")
 print(metrics)
-
 '''
 '''
 ##############################################################################
@@ -222,6 +214,7 @@ sfs2 = sfs1.fit(X_train, y_train)
 # Which features?
 print(list(sfs2.k_feature_idx_))
 '''
+
 '''
 #APPLYING BEST 17 SFS FEATURES TO DECISION TREE
 
@@ -230,18 +223,9 @@ X = df.loc[:, ['Time','V1','V5','V6','V7','V8','V9','V10','V11','V12','V13','V14
     'V18','V19','V23','V26','Amount']]
 y = df.loc[:, 'Class']
 
-# Create Decision Tree classifer object
-clf = DecisionTreeClassifier(random_state=1)
-
 #KFold Cross (with time series split) Validation approach
 tss = TimeSeriesSplit(n_splits = 3)
 tss.split(X)
-
-# Initialize the accuracy of the models to blank list. The accuracy of each model will be appended to this list
-F_measure_model = []
-roc_auc_model = []
-brier_score_model = []
-confusion_matrix_model = []
 
 # Iterate over each train-test split
 for train_index, test_index in tss.split(X):
@@ -266,6 +250,7 @@ metrics = pd.DataFrame(
 print("Model Metrics:")
 print(metrics)
 '''
+
 '''
 ############################################################################
 #FINDING THE OPTIMAL NUMBER OF COLUMNS AUTOMATICALLY WITH RFECV
@@ -293,23 +278,17 @@ for iter, pipe in enumerate(result['estimator']):
 
 '''
 '''
+
 ### RUNNING DECISION TREE WITH OPTIMAL RFECV COLUMNS
 
 #splitting into features and class
 X = df.loc[:, ['V10','V12','V14','V17']]
 y = df.loc[:, 'Class']
 
-# Create Decision Tree classifer object
-clf = DecisionTreeClassifier(random_state=1)
-
 #KFold Cross (with time series split) Validation approach
 tss = TimeSeriesSplit(n_splits = 3)
 tss.split(X)
 
-# Initialize the accuracy of the models to blank list. The accuracy of each model will be appended to this list
-F_measure_model = []
-roc_auc_model = []
-brier_score_model = []
 
 # Iterate over each train-test split
 for train_index, test_index in tss.split(X):
