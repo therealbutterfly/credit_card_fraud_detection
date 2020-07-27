@@ -8,8 +8,8 @@ import imblearn as imbl
 import scipy
 import sklearn
 import joblib
-from imblearn.over_sampling import BorderlineSMOTE
-from imblearn.under_sampling import NeighbourhoodCleaningRule
+from imblearn.over_sampling import BorderlineSMOTE, SMOTE
+from imblearn.under_sampling import NeighbourhoodCleaningRule, EditedNearestNeighbours
 from imblearn.combine import SMOTEENN, SMOTETomek
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import TimeSeriesSplit, cross_val_score
@@ -38,7 +38,7 @@ y = df.loc[:, 'Class']
 clf = DecisionTreeClassifier(random_state=1)
 
 #KFold Cross (with time series split) Validation approach
-tss = TimeSeriesSplit(n_splits = 3)
+tss = TimeSeriesSplit(n_splits = 2)
 tss.split(X)
 
 # Initialize the accuracy of the models to blank list. The accuracy of each model will be appended to this list
@@ -140,7 +140,7 @@ for i in (2,3,4,5):
     print("Model Metrics:")
     print(metrics)
 '''
-
+'''
 ###############################################################################
 #UNDER/OVERSAMPLING COMBO - SMOTE-ENN + DECISION TREE
 
@@ -156,7 +156,7 @@ for i in (0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9):
         y_train, y_test = y.iloc[train_index], y.iloc[test_index]
         print('Original Data Shape %s' % Counter(y_train))
         #Run sampling model
-        smote_enn = SMOTEENN(random_state=1, sampling_strategy=i)
+        smote_enn = SMOTEENN(random_state=1, sampling_strategy=i, enn=EditedNearestNeighbours(sampling_strategy='majority'), smote=SMOTE(sampling_strategy='minority'))
         X_res, y_res = smote_enn.fit_resample(X_train, y_train)
         print('Resampled dataset shape %s' % Counter(y_res))
         # Train the model
@@ -170,16 +170,16 @@ for i in (0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9):
         {'Result': ["Average"],
         'F_measure': np.average(F_measure_model),
         'ROC_AUC': np.average(roc_auc_model),
-        'Brier_Score' : np.average(brier_score_model
+        'Brier_Score' : np.average(brier_score_model)
         })
     print("Model Metrics:")
     print(metrics)
-
+'''
 '''
 ###############################################################################
 #UNDER/OVERSAMPLING COMBO - SMOTE-TOMEK + DECISION TREE
 
-for i in (0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9):
+for i in ("0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9"):
     print('sampling_strategy:', i)
     #initialize list
     F_measure_model = []
@@ -191,7 +191,7 @@ for i in (0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9):
         y_train, y_test = y.iloc[train_index], y.iloc[test_index]
         print('Original Data Shape %s' % Counter(y_train))
         #Run sampling model
-        smote_tomek = SMOTETomek(random_state=1, sampling_strategy=0.3)
+        smote_tomek = SMOTETomek(random_state=1, sampling_strategy=i)
         X_res, y_res = smote_tomek.fit_resample(X_train, y_train)
         print('Resampled dataset shape %s' % Counter(y_res))
         # Train the model
@@ -205,9 +205,27 @@ for i in (0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9):
         {'Result': ["Average"],
         'F_measure': np.average(F_measure_model),
         'ROC_AUC': np.average(roc_auc_model),
-        'Brier_Score' : np.average(brier_score_model
+        'Brier_Score' : np.average(brier_score_model)
         })
     print("Model Metrics:")
     print(metrics)
-
 '''
+F_measure_model = []
+roc_auc_model = []
+brier_score_model = []
+
+for train_index, test_index in tss.split(X):
+    #split data
+    X_train, X_test = X.iloc[train_index, :], X.iloc[test_index,:]
+    y_train, y_test = y.iloc[train_index], y.iloc[test_index]
+    print('Original Data Shape %s' % Counter(y_train))
+    #Run sampling model
+    smote_enn = SMOTEENN(random_state=1, sampling_strategy='auto')
+    X_res, y_res = smote_enn.fit_resample(X_train, y_train)
+    print('Resampled dataset shape %s' % Counter(y_res))
+    # Train the model
+    model = clf.fit(X_res, y_res)
+    # Append metrics to the list
+    print(fbeta_score(y_test, model.predict(X_test),beta=2))
+    print(roc_auc_score(y_test, model.predict(X_test)))
+    print(brier_score_loss(y_test, model.predict(X_test)))
