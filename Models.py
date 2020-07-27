@@ -79,7 +79,7 @@ print(metrics)
 ###############################################################################
 #RANDOM FORESTS
 
-n_estimators = [250, 300, 350]
+n_estimators = [300]
 
 # Create Random Forests classifer object
 rf = RandomForestClassifier(random_state=1)
@@ -99,12 +99,12 @@ for i in n_estimators:
         X_train, X_test = X.iloc[train_index, :], X.iloc[test_index,:]
         y_train, y_test = y.iloc[train_index], y.iloc[test_index]
         #Undersample data
-        ncr = NeighbourhoodCleaningRule(sampling_strategy='majority', n_neighbors=2)
-        X_res, y_res = ncr.fit_sample(X_train, y_train)
+        #ncr = NeighbourhoodCleaningRule(sampling_strategy='majority', n_neighbors=2)
+        #X_res, y_res = ncr.fit_sample(X_train, y_train)
         # Train the model
         rf = RandomForestClassifier(random_state=1, n_estimators=i)
-        model = rf.fit(X_res, y_res)
-        #model = clf.fit(X_train, y_train)
+        #model = rf.fit(X_res, y_res)
+        model = rf.fit(X_train, y_train)
         # Append metrics to the list
         F_measure_model.append(fbeta_score(y_test, model.predict(X_test),beta=2))
         roc_auc_model.append(roc_auc_score(y_test, model.predict(X_test)))
