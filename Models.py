@@ -34,12 +34,12 @@ F_measure_model = []
 roc_auc_model = []
 brier_score_model = []
 
-'''
+
 #############################################################################
 #DECISION TREE
 
 #create depths
-#max_depths = np.linspace(1, 32, 32, endpoint=True)
+#max_depths = np.linspace(1, 29, 29, endpoint=True)
 
 #KFold Cross (with time series split) Validation approach
 tss = TimeSeriesSplit(n_splits = 3)
@@ -74,8 +74,7 @@ metrics = pd.DataFrame(
     })
 print("Model Metrics:")
 print(metrics)
-'''
-'''
+
 ###############################################################################
 #RANDOM FORESTS
 
@@ -119,8 +118,6 @@ for i in n_estimators:
     print("Model Metrics:")
     print(metrics)
 
-'''
-
 ###############################################################################
 #SVM weighted
 from sklearn.pipeline import make_pipeline
@@ -128,7 +125,7 @@ from sklearn.preprocessing import StandardScaler
 # Create weighted SVM classifier object
 #model_svm = svm.SVC(random_state=1)
 model_svm = make_pipeline(StandardScaler(), svm.SVC(random_state=1))
-  
+
 #class_weight={1: 10},
 
 #KFold Cross (with time series split) Validation approach
